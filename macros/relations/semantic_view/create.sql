@@ -42,10 +42,23 @@
       identifier=identifier, schema=schema, database=database,
       type='view') -%}
 
+  {#-
+    A semantic view does not share a namespace with tables and views, so CREATE OR REPLACE
+    SEMANTIC VIEW leaves a table or view of the same name in place (a model that used to be
+    one), and that relation then shadows the semantic view in standard SQL. dbt's catalog
+    lists tables and views but not semantic views, so anything found here is such a
+    leftover: drop it.
+  -#}
+  {%- set existing_relation = load_cached_relation(target_relation) -%}
+
   {{ run_hooks(pre_hooks, inside_transaction=False) }}
 
   -- `BEGIN` happens here:
   {{ run_hooks(pre_hooks, inside_transaction=True) }}
+
+  {% if existing_relation is not none %}
+    {% do adapter.drop_relation(existing_relation) %}
+  {% endif %}
 
   -- build model
   {% call statement('main') -%}

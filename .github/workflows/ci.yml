@@ -66,6 +66,11 @@ jobs:
         working-directory: integration_tests
         run: dbt seed --profiles-dir . --target ci
 
+      - name: dbt run sem_orders_switch as a plain view (the first build must replace it)
+        working-directory: integration_tests
+        run: |
+          dbt run --profiles-dir . --target ci -s sem_orders_switch --vars '{sem_orders_switch_as: view}'
+
       - name: dbt build (run + test in one process — required for file-backed lifecycle)
         working-directory: integration_tests
         run: dbt build --profiles-dir . --target ci
@@ -73,6 +78,16 @@ jobs:
       - name: dbt build (re-run — verifies CREATE OR REPLACE idempotency)
         working-directory: integration_tests
         run: dbt build --profiles-dir . --target ci
+
+      - name: dbt run sem_orders_switch as a plain table, then build it as a semantic view again
+        working-directory: integration_tests
+        run: |
+          dbt run --profiles-dir . --target ci -s sem_orders_switch --vars '{sem_orders_switch_as: table}'
+          dbt build --profiles-dir . --target ci -s sem_orders_switch+
+
+      - name: Semantic view drop and rename macros
+        working-directory: integration_tests
+        run: dbt run-operation test_semantic_view_drop_and_rename --profiles-dir . --target ci
 
       - name: Upload target/ on failure
         if: failure()
