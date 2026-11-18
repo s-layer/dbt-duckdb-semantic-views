@@ -68,7 +68,8 @@ jobs:
 
       - name: dbt run sem_orders_switch as a plain view (the first build must replace it)
         working-directory: integration_tests
-        run: dbt run --profiles-dir . --target ci -s sem_orders_switch --vars '{sem_orders_switch_as: view}'
+        run: |
+          dbt run --profiles-dir . --target ci -s sem_orders_switch --vars '{sem_orders_switch_as: view}'
 
       - name: dbt build (run + test in one process — required for file-backed lifecycle)
         working-directory: integration_tests
