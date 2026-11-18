@@ -21,8 +21,19 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   query time.
 - The README installs the package from git, since it is not on the dbt Package Hub yet.
 
+### Fixed
+
+- A model that switches to `materialized='semantic_view'` from a table or view now drops
+  the old relation. A semantic view does not share a namespace with tables and views, so
+  `CREATE OR REPLACE SEMANTIC VIEW` left the old relation in place, and it shadowed the new
+  semantic view in standard SQL (`AGG(...)` then failed with "function agg does not exist").
+
 ### Added
 
+- Integration tests for `MATERIALIZATIONS` routing (the pre-aggregated table answers at its
+  grain, the base table at other grains, and `explain_semantic_view` names the right one),
+  pre- and post-hooks, the `drop` and `rename` macros, and switching a model from a view to
+  a semantic view.
 - Integration tests for reading a semantic view downstream through `ref()`: a table
   model that queries it with standard SQL (`GROUP BY` dimensions, `AGG(metric)`,
   `WHERE` on a fact), and a test that uses the `SEMANTIC_VIEW(...)` construct.
