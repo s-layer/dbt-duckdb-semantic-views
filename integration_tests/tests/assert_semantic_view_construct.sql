@@ -18,4 +18,6 @@ results as (
 select 'mismatch' as failure_reason, coalesce(e.region_name, r.region_name) as region_name, e.total_amount as expected_total, r.total_amount as actual_total, e.order_count as expected_count, r.order_count as actual_count
 from expected e
 full outer join results r on r.region_name = e.region_name
-where e.region_name is null or r.region_name is null or r.total_amount != e.total_amount or r.order_count != e.order_count
+where e.region_name is null or r.region_name is null
+  or r.total_amount is distinct from e.total_amount
+  or r.order_count is distinct from e.order_count
