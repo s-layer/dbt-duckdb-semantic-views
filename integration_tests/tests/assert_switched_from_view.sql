@@ -1,6 +1,7 @@
--- sem_orders_switch was a plain view before it became a semantic view. Standard SQL against
--- it must reach the semantic view, not the old view, which CI creates first and which would
--- otherwise answer with its stale total of 999.00 for region 1.
+-- sem_orders_switch was a plain view (or, in a later CI step, a table) before it became a
+-- semantic view. Standard SQL against it must reach the semantic view, not the old relation,
+-- which CI creates first and which would otherwise answer with its stale total of 999.00 for
+-- region 1.
 with results as (
   select region_id, agg(total_amount) as total_amount
   from {{ ref('sem_orders_switch') }}
