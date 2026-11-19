@@ -11,6 +11,7 @@ Run from the repository root:
 uv venv && uv pip install dbt-duckdb dbt-core "duckdb==2.0.0"
 source .venv/bin/activate
 cd integration_tests
+rm -f target/test.duckdb  # start empty, as CI does
 dbt deps --profiles-dir .
 dbt seed --profiles-dir . --target ci
 dbt run --profiles-dir . --target ci -s sem_orders_switch --vars '{sem_orders_switch_as: view}'
@@ -21,10 +22,13 @@ dbt build --profiles-dir . --target ci -s sem_orders_switch+
 dbt run-operation test_semantic_view_drop_and_rename --profiles-dir . --target ci
 ```
 
-It passes when every command exits 0. This is the sequence `.github/workflows/ci.yml`
-runs: the second `dbt build` proves CREATE OR REPLACE is idempotent, and the switch
-steps prove a plain view or table is replaced by the semantic view. Run it from a fresh
-`integration_tests/target` when a change touches the materialization.
+It passes when every command exits 0 and every printed `rc=` is 0. This is the sequence
+`.github/workflows/ci.yml` runs: the second `dbt build` proves CREATE OR REPLACE is
+idempotent, and the switch steps prove a plain view or table is replaced by the semantic
+view. The `ci` target is file-backed, so the database is deleted first: a file left by
+an earlier run would send the switch steps down paths CI never takes.
+
+A run that skipped what you changed is not a pass.
 
 Take each command's exit status from the command itself. In a pipeline `$?` is the last
 command's status, so `cmd | tail` hides a failure. Redirect long output to a file, then
