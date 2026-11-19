@@ -22,11 +22,11 @@ dbt build --profiles-dir . --target ci -s sem_orders_switch+
 dbt run-operation test_semantic_view_drop_and_rename --profiles-dir . --target ci
 ```
 
-It passes when every command exits 0 and every printed `rc=` is 0. This is the sequence
-`.github/workflows/ci.yml` runs: the second `dbt build` proves CREATE OR REPLACE is
-idempotent, and the switch steps prove a plain view or table is replaced by the semantic
-view. The `ci` target is file-backed, so the database is deleted first: a file left by
-an earlier run would send the switch steps down paths CI never takes.
+It passes when every command exits 0. This is the sequence `.github/workflows/ci.yml`
+runs: the second `dbt build` proves CREATE OR REPLACE is idempotent, and the switch
+steps prove a plain view or table is replaced by the semantic view. The `ci` target is
+file-backed, so the database is deleted first: a file left by an earlier run would send
+the switch steps down paths CI never takes.
 
 A run that skipped what you changed is not a pass.
 
